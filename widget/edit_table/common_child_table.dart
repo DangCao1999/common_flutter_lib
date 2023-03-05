@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:canxe/common/utils/html/html_utils.dart';
+import 'package:excel/excel.dart';
+
 import '../../utils.dart';
 
 import '../../data/cloud_obj.dart';
@@ -13,8 +18,8 @@ import '../common.dart';
 import 'parent_param.dart';
 
 class ChildTableUtils {
-  static Widget printButton(context,CollectionReference databaseRef, PrintInfo printInfo,
-      ParentParam fallBackParentParam,
+  static Widget printButton(context, CollectionReference databaseRef,
+      PrintInfo printInfo, ParentParam fallBackParentParam,
       {isDense = false, Color backgroundColor}) {
     return CommonButton.getButtonAsync(context, () async {
       var parentParam = printInfo.parentParam ?? fallBackParentParam;
@@ -41,6 +46,96 @@ class ChildTableUtils {
         });
         await creator.createPdfSummary(
             context, DateTime.now(), printInfo, data);
+      });
+    },
+        title: printInfo.buttonTitle,
+        iconData: Icons.print,
+        isDense: isDense,
+        regularColor: backgroundColor);
+  }
+
+  static Widget exportExcel(context, CollectionReference databaseRef,
+      PrintInfo printInfo, ParentParam fallBackParentParam,
+      {isDense = false, Color backgroundColor}) {
+    return CommonButton.getButtonAsync(context, () async {
+      var parentParam = printInfo.parentParam ?? fallBackParentParam;
+      var allQuery = applyFilterToQuery(databaseRef, parentParam).orderBy(
+          parentParam.sortKey,
+          descending: parentParam.sortKeyDescending) as Query;
+      return allQuery.getDocuments().then((querySnapshot) async {
+        List<CloudObject> data = querySnapshot.documents
+            .map((e) => CloudObject(e.documentID, e.data))
+            .toList();
+
+        data.forEach((element) {
+          print(element.dataMap);
+        });
+
+        var excel = Excel.createExcel();
+        String sheetName = "Sheet1";
+        List rows = [];
+
+        Sheet sheetObject = excel[sheetName];
+
+        CellStyle cellStyleBold = CellStyle(
+            fontFamily: getFontFamily(FontFamily.Calibri), bold: true);
+
+        sheetObject.merge(
+            CellIndex.indexByString("A1"), CellIndex.indexByString("L1"),
+            customValue: "CÔNG TY TNHH MTV HUỲNH HIỆP HƯNG");
+
+        sheetObject.merge(
+            CellIndex.indexByString("A2"), CellIndex.indexByString("L2"),
+            customValue: "XUÂN ĐỊNH- XUÂN LỘC-ĐỒNG NAI");
+
+        sheetObject.merge(
+            CellIndex.indexByString("A3"), CellIndex.indexByString("L3"),
+            customValue: printInfo.title);
+
+        sheetObject.merge(
+            CellIndex.indexByString("A4"), CellIndex.indexByString("L4"),
+            customValue: "Ngày in: ${formatDatetime(context, DateTime.now())}");
+
+        // parse titleId to title description
+        List<String> titleDescription = printInfo.printFields
+            .map((titleId) => printInfo.inputInfoMap.map[titleId].fieldDes)
+            .toList();
+        sheetObject.insertRowIterables(titleDescription, 7);
+
+        int indexRowData = 8;
+
+        // calculate sumTotal
+        SchemaAndData.fillInCalculatedData(data, printInfo.inputInfoMap);
+
+        // mapping key to value (V -> Vo, B -> Ba)
+        data.forEach((row) {
+          row.dataMap = SchemaAndData.fillInOptionData(
+              row.dataMap, printInfo.inputInfoMap.map);
+        });
+
+        parentParam.filterDataWrappers.forEach((fieldName, filter) {
+          if (filter.postFilterFunction != null) {
+            data = data
+                .where((row) => filter.postFilterFunction(row.dataMap))
+                .toList();
+          }
+        });
+        
+        // parse data to list
+        data.forEach((element) {
+          List<dynamic> row = printInfo.printFields.map((key) {
+            return toText(context, element.dataMap[key]);
+          }).toList();
+          sheetObject.insertRowIterables(row, indexRowData);
+          indexRowData += 1;
+        });
+
+        Completer<String> completer = Completer();
+        excel.encode().then((bytes) {
+          (HtmlUtils()).downloadWeb(bytes, 'report_by_date.xlsx');
+          completer.complete(null);
+        });
+        await completer.future;
       });
     },
         title: printInfo.buttonTitle,
@@ -81,7 +176,9 @@ class ChildTableUtils {
 
   static Widget newButton(
           context, CollectionReference databaseRef, InputInfoMap inputInfoMap,
-          {bool isPhone = false, Map<String, dynamic> initialValues, title='Mới'}) =>
+          {bool isPhone = false,
+          Map<String, dynamic> initialValues,
+          title = 'Mới'}) =>
       CommonButton.getButton(context, () {
         initiateNew(context, databaseRef, inputInfoMap,
             isPhone: isPhone, initialValues: initialValues);
