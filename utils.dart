@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'data/cloud_table.dart';
 import 'widget/common.dart';
 
-final NumberFormat NUM_FORMAT = NumberFormat("#,###");
+final NumberFormat NUM_FORMAT = NumberFormat.decimalPattern('vi_VN');
 final TABLE_OF_TWO_DIVIDER = "TABLE_OF_TWO_DIVIDER";
 
 final TextStyle BIG_FONT = TextStyle(fontSize: 18);
