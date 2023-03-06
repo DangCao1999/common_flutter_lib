@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../utils.dart';
 
 class ExcelCreator {
-  static Excel exportFile(
+  static Excel createFile(
     BuildContext context,
     PrintInfo printInfo,
     List<CloudObject> data,

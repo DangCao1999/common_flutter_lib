@@ -76,7 +76,7 @@ class ChildTableUtils {
           }
         });
 
-        Excel excel = ExcelCreator.exportFile(context, printInfo, data);
+        Excel excel = ExcelCreator.createFile(context, printInfo, data);
         Completer<String> completer = Completer();
         excel.encode().then((bytes) {
           (HtmlUtils()).downloadWeb(bytes, 'report_by_date.xlsx');
