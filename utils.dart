@@ -59,6 +59,8 @@ String formatDateOnly(context, DateTime dt) {
   return localizations.formatCompactDate(dt);
 }
 
+/// ----- [Start] old format for phieu can by car, ...
+
 String formatDatetime(context, DateTime dateTime) {
   if (dateTime == null) return "";
 
@@ -99,6 +101,36 @@ String toText(context, dynamic val) {
   }
   return null;
 }
+
+/// ----- [End] old format for phieu can by car, ...
+
+/// ----- [Start] new format for phieu can by date (export excel)
+
+DateTime parseTimestampToDateTime(Timestamp timestamp) {
+  if (timestamp == null) return DateTime.now();
+  DateTime dateTime = timestamp.toDate();
+  return dateTime;
+}
+
+String formatTime(context, Timestamp timestamp) {
+  if (timestamp == null) return "";
+  DateTime dateTime = parseTimestampToDateTime(timestamp);
+  final MaterialLocalizations localizations = MaterialLocalizations.of(context);
+  final time = localizations.formatTimeOfDay(
+    TimeOfDay.fromDateTime(dateTime),
+    alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+  );
+  return time;
+}
+
+String formatDate(context, Timestamp timestamp){
+  if (timestamp == null) return "";
+  DateTime dateTime = parseTimestampToDateTime(timestamp);
+  final MaterialLocalizations localizations = MaterialLocalizations.of(context);
+  return localizations.formatCompactDate(dateTime);
+}
+
+/// ----- [End]new format for phieu can by date (export excel)
 
 double screenHeight(context) {
   return MediaQuery.of(context).size.height;

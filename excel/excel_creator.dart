@@ -13,7 +13,7 @@ class ExcelCreator {
   ) {
     var excel = Excel.createExcel();
     String sheetName = "Sheet1";
-   
+
     Sheet sheetObject = excel[sheetName];
 
     // CellStyle cellStyleBold =
@@ -52,6 +52,8 @@ class ExcelCreator {
     // parse data to list<row>
     data.forEach((element) {
       List<dynamic> row = printInfo.printFields.map((key) {
+        if (key == 'dateIn') return formatDate(context, element.dataMap['dateIn']);
+        if (key == 'timeIn') return formatTime(context, element.dataMap['dateIn']);
         return toText(context, element.dataMap[key]);
       }).toList();
       sheetObject.insertRowIterables(row, indexRowData);

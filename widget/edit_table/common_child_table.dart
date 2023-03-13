@@ -79,7 +79,7 @@ class ChildTableUtils {
         Excel excel = ExcelCreator.createFile(context, printInfo, data);
         Completer<String> completer = Completer();
         excel.encode().then((bytes) {
-          (HtmlUtils()).downloadWeb(bytes, 'report_by_date.xlsx');
+          (HtmlUtils()).downloadWeb(bytes, 'phieu_can.xlsx');
           completer.complete(null);
         });
         await completer.future;
